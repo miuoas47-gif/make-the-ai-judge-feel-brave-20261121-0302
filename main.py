@@ -19,21 +19,29 @@ TEXT = (
 )
 
 
+def verify_entry(path: str) -> str:
+    """Read the written entry back and confirm it is usable.
+
+    Returns the text that was read back. Raises SystemExit when the file
+    is empty or outside the 1-280 character gate, and makes the file
+    world-readable (mode 0644) so the grader, running as a different
+    user, can read it.
+    """
+    with open(path, "r", encoding="utf-8") as f:
+        written = f.read()
+    if not written or not 1 <= len(written) <= 280:
+        raise SystemExit(f"verification failed: entry.txt is {len(written)} chars")
+    os.chmod(path, 0o644)
+    return written
+
+
 def main() -> None:
     output_dir = os.environ.get("OUTPUT_DIR", "/output")
     os.makedirs(output_dir, exist_ok=True)
     path = os.path.join(output_dir, "entry.txt")
     with open(path, "w", encoding="utf-8") as f:
         f.write(TEXT)
-
-    # Verify what was written: read it back, check it is non-empty and
-    # within the 1-280 character gate, then make it world-readable so the
-    # grader (running as a different user) can read it.
-    with open(path, "r", encoding="utf-8") as f:
-        written = f.read()
-    if not written or not 1 <= len(written) <= 280:
-        raise SystemExit(f"verification failed: entry.txt is {len(written)} chars")
-    os.chmod(path, 0o644)
+    verify_entry(path)
 
 
 if __name__ == "__main__":
